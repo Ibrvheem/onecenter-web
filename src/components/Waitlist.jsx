@@ -9,9 +9,94 @@ import Aos from "aos";
 import "aos/dist/aos.css";
 
 import React, { useEffect, useState } from "react";
+import { ReactMic } from "react-mic";
 
 const useStyles = makeStyles((theme) => {
   return {
+    callContainer: {
+      width: "100%",
+      display: "flex",
+      justifyContent: "center",
+    },
+    callDisappear: {
+      position: "fixed",
+      zIndex: 5,
+      top: "-100rem",
+      width: "0rem",
+      height: "80px",
+      borderRadius: "10rem",
+      backgroundColor: "black",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
+      padding: "0rem 3rem",
+      transition: "all ease-in-out 1.2s",
+      [theme.breakpoints.down("sm")]: {
+        width: "35rem",
+        height: "80px",
+      },
+    },
+    callAppear: {
+      position: "fixed",
+      zIndex: 5,
+      top: "5rem",
+      margin: "0 auto",
+      width: "50rem",
+      height: "80px",
+      borderRadius: "10rem",
+      backgroundColor: "black",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
+      padding: "0rem 3rem",
+      transition: "all ease-in-out 1.2s",
+      [theme.breakpoints.down("sm")]: {
+        width: "35rem",
+        height: "80px",
+      },
+    },
+    callInfo: {
+      display: "flex",
+      alignItems: "center",
+      gap: "1rem",
+    },
+    oneCenterCallStatus: {
+      display: "flex",
+      justifyContent: "center",
+      flexDirection: "column",
+      alignItems: "center",
+      // gap: "1rem",
+    },
+    callDot: {
+      height: "1rem",
+      width: "1rem",
+      borderRadius: "50%",
+      backgroundColor: "orange",
+      animationName: "my-animation",
+      animationDuration: "1s",
+      animationDirection: "alternate",
+      animationIterationCount: "infinite",
+      animationTimingFunction: "linear",
+    },
+
+    callConnectDisconnect: {
+      height: "5rem",
+      width: "5rem",
+      borderRadius: "50%",
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      backgroundColor: "rgba(255,255,255, .1)",
+    },
+    callConnectDisconnectAppear: {
+      height: "5rem",
+      width: "5rem",
+      borderRadius: "50%",
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      backgroundColor: "rgba(255,255,255, .1)",
+    },
     form: {
       marginTop: "10rem",
       display: "flex",
@@ -67,6 +152,9 @@ function Waitlist(props) {
   const [isFocused, setIsFocused] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [companyName, setCompanyName] = useState("");
+  const [callComponent, setCallComponent] = useState(false);
+  const [recordedAudio, setRecordedAudio] = useState(null);
 
   const handleFocus = () => {
     setIsFocused(true);
@@ -75,16 +163,109 @@ function Waitlist(props) {
   const handleBlur = () => {
     setIsFocused(false);
   };
+  function handleJoinWaitList() {
+    fetch("https://api.onecenter.itcentral.ng/review", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ name, email, company: companyName }),
+    })
+      .then((response) => {
+        // Check if the response status is OK (200-299)
+        if (response.ok) {
+          // Read the response as a byte array
+          response.arrayBuffer().then((buffer) => {
+            // Decode the byte array using the Web Audio API
+            context.decodeAudioData(buffer, (decodedData) => {
+              // Create a new buffer source and set the decoded data as its buffer
+              const source = context.createBufferSource();
+              source.buffer = decodedData;
+              // Connect the buffer source to the destination (speakers)
+              source.connect(context.destination);
+              // Start playing the audio
+              source.start();
+            });
+          });
+        } else {
+          console.error("Error:", response.status, response.statusText);
+        }
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+      });
+
+    // Create a new AudioContext
+    const context = new AudioContext();
+  }
+  const [isRecording, setIsRecording] = useState(false);
+
+  const onStart = () => {};
+
+  const onStop = (recordedBlob) => {
+    if (recordedBlob.blob) {
+      const recordedFile = new File([recordedBlob.blob], "recorded_audio.wav", {
+        type: recordedBlob.blob.type,
+        lastModified: Date.now(),
+      });
+      setRecordedAudio(recordedFile);
+      console.log(recordedFile);
+    }
+  };
 
   return (
     <div>
+      <div className={classes.callContainer}>
+        <button onClick={() => setIsRecording(!isRecording)}>
+          {isRecording ? "Stop Recording" : "Start Recording"}
+        </button>
+        <ReactMic
+          record={isRecording}
+          onStop={onStop}
+          //          onStart={onStart}
+          mimeType="audio/wav"
+        />
+        <div
+          className={callComponent ? classes.callAppear : classes.callDisappear}
+        >
+          <div className={classes.callInfo}>
+            <div className={classes.callDot}></div>
+            <div className={classes.timer}>
+              <Typography
+                variant="body2"
+                style={{ opacity: 0.5, fontWeight: 600 }}
+              >
+                0:59
+              </Typography>
+            </div>
+          </div>
+          <div className={classes.oneCenterCallStatus}>
+            <Typography variant="body1">OneCenter</Typography>
+            <Typography
+              variant="body2"
+              style={{ opacity: 1, color: "green", fontWeight: 600 }}
+            >
+              Connected
+            </Typography>
+            {/* <audio src={} autoPlay /> */}
+          </div>
+          <div
+            className={classes.callConnectDisconnect}
+            onClick={() => {
+              setCallComponent(false);
+            }}
+          >
+            <img src="./Icons/telephone.png" alt="" width="30rem" />
+          </div>
+        </div>
+      </div>
       <Container
         classes={classes.waitList}
         id="waitList"
-        data-aos="fade-zoom-up"
-        data-aos-easing="ease-in-back"
-        data-aos-delay="500"
-        data-aos-offset="0"
+        // data-aos="fade-zoom-up"
+        // data-aos-easing="ease-in-back"
+        // data-aos-delay="500"
+        // data-aos-offset="0"
       >
         <Typography variant="h4" className="waitlistH4">
           Join the OneCenter waitlist now for exclusive access to our beta
@@ -153,12 +334,41 @@ function Waitlist(props) {
             onFocus={handleFocus}
             onBlur={handleBlur}
           />
+          <TextField
+            variant="outlined"
+            onChange={(e) => {
+              setCompanyName(e.target.value);
+            }}
+            inputProps={{
+              style: { color: "white" },
+            }}
+            label={
+              <span
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "1rem",
+                  opacity: isFocused ? 1 : 0.2,
+                  transition: "all ease-in-out .5s",
+                }}
+              >
+                <img src="./Icons/mail.png" className={classes.icon} />
+                Company to Review
+              </span>
+            }
+            className={classes.textInput}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
+          />
 
           <Button
             variant="outlined"
             className={classes.button}
             startIcon
-            onClick={props.handleClick}
+            onClick={() => {
+              handleJoinWaitList();
+              props.handleClick();
+            }}
             disabled={email || name != "" ? false : true}
             // disabled
             endIcon={<img src="./Icons/hourglass.png" width="25rem" />}

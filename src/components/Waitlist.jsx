@@ -155,6 +155,8 @@ function Waitlist(props) {
   const [companyName, setCompanyName] = useState("");
   const [callComponent, setCallComponent] = useState(false);
   const [recordedAudio, setRecordedAudio] = useState(null);
+  const [reviewId, setReviewId] = useState("");
+  const [record, setRecord] = useState(false);
 
   const handleFocus = () => {
     setIsFocused(true);
@@ -164,6 +166,10 @@ function Waitlist(props) {
     setIsFocused(false);
   };
   function handleJoinWaitList() {
+    let ringer = new Audio("./Audio/ringer.mp3");
+    ringer.loop = true;
+    ringer.play();
+    setCallComponent(true);
     fetch("https://api.onecenter.itcentral.ng/review", {
       method: "POST",
       headers: {
@@ -172,9 +178,13 @@ function Waitlist(props) {
       body: JSON.stringify({ name, email, company: companyName }),
     })
       .then((response) => {
+        ringer.pause();
+        ringer.currentTime = 0;
         // Check if the response status is OK (200-299)
         if (response.ok) {
-          // Read the response as a byte array
+          const headers = new Headers(response.headers);
+          const id = headers.get("Review-Id");
+          console.log(id);
           response.arrayBuffer().then((buffer) => {
             // Decode the byte array using the Web Audio API
             context.decodeAudioData(buffer, (decodedData) => {
@@ -185,6 +195,31 @@ function Waitlist(props) {
               source.connect(context.destination);
               // Start playing the audio
               source.start();
+              source.addEventListener("ended", () => {
+                startRecording();
+                setTimeout(() => {
+                  stopRecording();
+
+                  const formData = new FormData();
+
+                  formData.append("speech", recordedAudio);
+                  console.log(id);
+
+                  fetch(`https://api.onecenter.itcentral.ng/review/${id}`, {
+                    method: "PATCH",
+                    headers: {
+                      "Content-Type": "multipart/form-data",
+                    },
+                    body: formData,
+                  }).then((res) => {
+                    res.json().then((data) => {
+                      if (data.status == "success") {
+                        console.log(data.message);
+                      }
+                    });
+                  });
+                }, 10000);
+              });
             });
           });
         } else {
@@ -198,33 +233,52 @@ function Waitlist(props) {
     // Create a new AudioContext
     const context = new AudioContext();
   }
-  const [isRecording, setIsRecording] = useState(false);
+  const startRecording = () => {
+    setRecord(true);
+    setRecordedAudio(null);
+  };
 
-  const onStart = () => {};
-
+  const stopRecording = () => {
+    setRecord(false);
+  };
   const onStop = (recordedBlob) => {
-    if (recordedBlob.blob) {
-      const recordedFile = new File([recordedBlob.blob], "recorded_audio.wav", {
-        type: recordedBlob.blob.type,
-        lastModified: Date.now(),
-      });
-      setRecordedAudio(recordedFile);
-      console.log(recordedFile);
-    }
+    const recordedFile = new File([recordedBlob.blob], "recorded_audio.wav", {
+      type: recordedBlob.blob.type,
+      lastModified: Date.now(),
+    });
+    setRecordedAudio(recordedFile);
+    console.log(recordedFile);
   };
 
   return (
     <div>
+      <div>
+        <ReactMic record={record} className="sound-wave" onStop={onStop} />
+        <div className={classes.recorder}>
+          {/* <Button
+            variant="contained"
+            className={classes.btn}
+            color="secondary"
+            onClick={startRecording}
+          >
+            Start Recording
+          </Button>
+          <Button
+            variant="contained"
+            className={classes.btn}
+            color="secondary"
+            onClick={stopRecording}
+          >
+            Stop Recording
+          </Button> */}
+          {/* {recordedAudio && (
+            <audio controls>
+              <source src={URL.createObjectURL(recordedAudio)} />
+            </audio>
+          )}{" "} */}
+        </div>
+      </div>
       <div className={classes.callContainer}>
-        <button onClick={() => setIsRecording(!isRecording)}>
-          {isRecording ? "Stop Recording" : "Start Recording"}
-        </button>
-        <ReactMic
-          record={isRecording}
-          onStop={onStop}
-          //          onStart={onStart}
-          mimeType="audio/wav"
-        />
         <div
           className={callComponent ? classes.callAppear : classes.callDisappear}
         >
@@ -365,10 +419,7 @@ function Waitlist(props) {
             variant="outlined"
             className={classes.button}
             startIcon
-            onClick={() => {
-              handleJoinWaitList();
-              props.handleClick();
-            }}
+            onClick={handleJoinWaitList}
             disabled={email || name != "" ? false : true}
             // disabled
             endIcon={<img src="./Icons/hourglass.png" width="25rem" />}

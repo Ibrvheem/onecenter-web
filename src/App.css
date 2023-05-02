@@ -115,7 +115,9 @@ body {
   background-color: #3898ec;
   opacity: 1;
 }
-
+.sound-wave {
+  display: none;
+}
 @keyframes my-animation {
   from {
     /* background-color: #ff7a59; */

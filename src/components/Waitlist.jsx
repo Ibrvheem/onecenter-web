@@ -165,6 +165,22 @@ function Waitlist(props) {
   const handleBlur = () => {
     setIsFocused(false);
   };
+  const startRecording = () => {
+    setRecord(true);
+    setRecordedAudio(null);
+  };
+
+  const stopRecording = () => {
+    setRecord(false);
+  };
+  const onStop = (recordedBlob) => {
+    const blob = new Blob([recordedBlob.blob], {
+      type: recordedBlob.blob.type,
+    });
+    setRecordedAudio(blob);
+    console.log(blob);
+  };
+
   function handleJoinWaitList() {
     let ringer = new Audio("./Audio/ringer.mp3");
     ringer.loop = true;
@@ -201,22 +217,30 @@ function Waitlist(props) {
                   stopRecording();
 
                   const formData = new FormData();
+                  console.log(recordedAudio);
+                  console.log(recordedAudio instanceof Blob); // should output true
 
-                  formData.append("speech", recordedAudio);
+                  formData.append("speech", recordedAudio, "audio.webm"); // add a filename for the audio file
                   console.log(id);
 
                   fetch(`https://api.onecenter.itcentral.ng/review/${id}`, {
                     method: "PATCH",
-                    headers: {
-                      "Content-Type": "multipart/form-data",
-                    },
                     body: formData,
-                  }).then((res) => {
-                    res.json().then((data) => {
-                      if (data.status == "success") {
-                        console.log(data.message);
-                      }
-                    });
+                  }).then((response) => {
+                    if (response.ok) {
+                      response.arrayBuffer().then((buffer) => {
+                        // Decode the byte array using the Web Audio API
+                        context.decodeAudioData(buffer, (decodedData) => {
+                          // Create a new buffer source and set the decoded data as its buffer
+                          const source = context.createBufferSource();
+                          source.buffer = decodedData;
+                          // Connect the buffer source to the destination (speakers)
+                          source.connect(context.destination);
+                          // Start playing the audio
+                          source.start();
+                        });
+                      });
+                    }
                   });
                 }, 10000);
               });
@@ -233,22 +257,6 @@ function Waitlist(props) {
     // Create a new AudioContext
     const context = new AudioContext();
   }
-  const startRecording = () => {
-    setRecord(true);
-    setRecordedAudio(null);
-  };
-
-  const stopRecording = () => {
-    setRecord(false);
-  };
-  const onStop = (recordedBlob) => {
-    const recordedFile = new File([recordedBlob.blob], "recorded_audio.wav", {
-      type: recordedBlob.blob.type,
-      lastModified: Date.now(),
-    });
-    setRecordedAudio(recordedFile);
-    console.log(recordedFile);
-  };
 
   return (
     <div>

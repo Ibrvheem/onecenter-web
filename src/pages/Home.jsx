@@ -13,45 +13,10 @@ const useStyles = makeStyles((theme) => {
   return {};
 });
 function Home() {
-  const classes = useStyles();
-  const [audioUrl, setAudioUrl] = useState(null);
-  const [callComponent, setCallComponent] = useState(false);
-  function handleCall() {
-    setCallComponent(true);
-  }
-  // const postData = (audioUrl) => {
-  //   setCallComponent(false);
-
-  //   const formData = new FormData();
-  //   formData.append(
-  //     "audio",
-  //     audioUrl
-  //     // new File([audioBlob], "recording.wav", { type: "audio/wav" })
-  //   );
-
-  //   fetch("/api/recordings", {
-  //     method: "POST",
-  //     body: formData,
-  //   })
-  //     .then((response) => response.json())
-  //     .then((data) => {
-  //       console.log(data);
-  //     })
-  //     .catch((error) => {
-  //       console.error(error);
-  //     });
-  // };
-
   return (
     <div>
       <Herosection />
-
-      {audioUrl && (
-        <div>
-          <audio src={audioUrl} controls />
-        </div>
-      )}
-      <Waitlist handleClick={handleCall} />
+      <Waitlist />
       <Reviews />
       <Footer />
     </div>

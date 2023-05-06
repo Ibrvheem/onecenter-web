@@ -158,6 +158,10 @@ function Waitlist(props) {
   const [reviewId, setReviewId] = useState("");
   const [record, setRecord] = useState(false);
 
+  useEffect(() => {
+    setRecordedAudio(recordedAudio);
+  }, [recordedAudio]);
+
   const handleFocus = () => {
     setIsFocused(true);
   };
@@ -172,6 +176,8 @@ function Waitlist(props) {
 
   const stopRecording = () => {
     setRecord(false);
+
+    console.log("stopped");
   };
   const onStop = (recordedBlob) => {
     const blob = new Blob([recordedBlob.blob], {
@@ -181,6 +187,43 @@ function Waitlist(props) {
     console.log(blob);
   };
 
+  useEffect(() => {
+    if (recordedAudio) {
+      // Rest of your code...
+      // Use recordedAudio here
+      const formData = new FormData();
+      console.log(recordedAudio);
+      console.log(recordedAudio instanceof Blob); // should output true
+      let revId = localStorage.getItem("ID");
+
+      formData.append("speech", recordedAudio, "audio.webm"); // add a filename for the audio file
+      console.log(revId);
+
+      fetch(`https://api.onecenter.itcentral.ng/review/${revId}`, {
+        method: "PATCH",
+        body: formData,
+      }).then((response) => {
+        if (response.ok) {
+          response.arrayBuffer().then((buffer) => {
+            // Decode the byte array using the Web Audio API
+            context.decodeAudioData(buffer, (decodedData) => {
+              // Create a new buffer source and set the decoded data as its buffer
+              const source = context.createBufferSource();
+              source.buffer = decodedData;
+              // Connect the buffer source to the destination (speakers)
+              source.connect(context.destination);
+              // Start playing the audio
+              source.start();
+              source.addEventListener("ended", () => {
+                setCallComponent(false);
+              });
+            });
+          });
+        }
+      });
+      const context = new AudioContext();
+    }
+  }, [recordedAudio]);
   function handleJoinWaitList() {
     let ringer = new Audio("./Audio/ringer.mp3");
     ringer.loop = true;
@@ -201,6 +244,7 @@ function Waitlist(props) {
           const headers = new Headers(response.headers);
           const id = headers.get("Review-Id");
           console.log(id);
+          localStorage.setItem("ID", id);
           response.arrayBuffer().then((buffer) => {
             // Decode the byte array using the Web Audio API
             context.decodeAudioData(buffer, (decodedData) => {
@@ -213,36 +257,7 @@ function Waitlist(props) {
               source.start();
               source.addEventListener("ended", () => {
                 startRecording();
-                setTimeout(() => {
-                  stopRecording();
-
-                  const formData = new FormData();
-                  console.log(recordedAudio);
-                  console.log(recordedAudio instanceof Blob); // should output true
-
-                  formData.append("speech", recordedAudio, "audio.webm"); // add a filename for the audio file
-                  console.log(id);
-
-                  fetch(`https://api.onecenter.itcentral.ng/review/${id}`, {
-                    method: "PATCH",
-                    body: formData,
-                  }).then((response) => {
-                    if (response.ok) {
-                      response.arrayBuffer().then((buffer) => {
-                        // Decode the byte array using the Web Audio API
-                        context.decodeAudioData(buffer, (decodedData) => {
-                          // Create a new buffer source and set the decoded data as its buffer
-                          const source = context.createBufferSource();
-                          source.buffer = decodedData;
-                          // Connect the buffer source to the destination (speakers)
-                          source.connect(context.destination);
-                          // Start playing the audio
-                          source.start();
-                        });
-                      });
-                    }
-                  });
-                }, 10000);
+                setTimeout(stopRecording, 5000);
               });
             });
           });
@@ -350,7 +365,7 @@ function Waitlist(props) {
               setName(e.target.value);
             }}
             inputProps={{
-              style: { color: "white" },
+              style: { color: "red" },
             }}
             label={
               <span

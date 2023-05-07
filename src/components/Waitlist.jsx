@@ -257,7 +257,7 @@ function Waitlist(props) {
               source.start();
               source.addEventListener("ended", () => {
                 startRecording();
-                setTimeout(stopRecording, 5000);
+                setTimeout(stopRecording, 30000);
               });
             });
           });

@@ -26,7 +26,6 @@ const useStyles = makeStyles((theme) => {
         width: "100%",
         marginLeft: "3rem",
       },
-      //   transition: "all ease-in-out .5s",
     },
   };
 });
@@ -40,16 +39,16 @@ function Reviews() {
     cellAlign: "left",
   };
 
-  const [reviews, setReviews] = useState([])
+  const [reviews, setReviews] = useState([]);
 
-  useEffect(()=>{
+  useEffect(() => {
     fetch(`https://api.onecenter.itcentral.ng/reviews`, {
-        method: "GET",
-      }).then(async (response) => {
-        let data = await response.json();
-        setReviews(data);
-      })
-  }, [])
+      method: "GET",
+    }).then(async (response) => {
+      let data = await response.json();
+      setReviews(data);
+    });
+  }, []);
   return (
     <div>
       <Container className={classes.reviews}>
@@ -64,34 +63,32 @@ function Reviews() {
         </div>
       </Container>
       <Flickity
-        className={classes.cards} // default ''
-        elementType={"div"} // default 'div'
-        options={flickityOptions} // takes flickity options {}
-        disableImagesLoaded={false} // default false
-        reloadOnUpdate // default false
-        static // default false
+        className={classes.cards}
+        elementType={"div"}
+        options={flickityOptions}
+        disableImagesLoaded={false}
+        reloadOnUpdate
+        static
       >
-        {reviews?.map(review=>
+        {reviews?.map((review) => (
           <Card className={classes.card} elevation={10}>
             <div className="comment">
-              <Typography variant="body2">
-                {review?.content}
-              </Typography>
+              <Typography variant="body2">{review?.content}</Typography>
             </div>
             <div style={{ display: "flex", justifyContent: "space-between" }}>
               <div className="personName">
                 <Typography variant="body2" style={{ opacity: 0.5 }}>
-                    By: {review?.name}
+                  By: {review?.name}
                 </Typography>
               </div>
               <div className="companyName">
                 <Typography variant="body2" style={{ opacity: 0.5 }}>
-                    For: {review?.company}
+                  For: {review?.company}
                 </Typography>
               </div>
             </div>
           </Card>
-        )}
+        ))}
       </Flickity>
     </div>
   );

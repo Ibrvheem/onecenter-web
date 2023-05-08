@@ -177,15 +177,12 @@ function Waitlist(props) {
 
   const stopRecording = () => {
     setRecord(false);
-
-    console.log("stopped");
   };
   const onStop = (recordedBlob) => {
     const blob = new Blob([recordedBlob.blob], {
       type: recordedBlob.blob.type,
     });
     setRecordedAudio(blob);
-    console.log(blob);
   };
 
   useEffect(() => {
@@ -195,7 +192,6 @@ function Waitlist(props) {
       console.log(recordedAudio instanceof Blob);
       let revId = localStorage.getItem("ID");
       formData.append("speech", recordedAudio, "audio.webm");
-      console.log(revId);
 
       fetch(`https://api.onecenter.itcentral.ng/review/${revId}`, {
         method: "PATCH",
@@ -244,13 +240,12 @@ function Waitlist(props) {
               source.buffer = decodedData;
               source.connect(context.destination);
               source.start();
-              if (id){
+              if (id) {
                 source.addEventListener("ended", () => {
                   startRecording();
                   setTimeout(stopRecording, allowedReviewTime);
                 });
-              }
-              else{
+              } else {
                 setCallComponent(false);
               }
             });

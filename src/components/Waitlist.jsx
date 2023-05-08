@@ -189,14 +189,11 @@ function Waitlist(props) {
 
   useEffect(() => {
     if (recordedAudio) {
-      // Rest of your code...
-      // Use recordedAudio here
       const formData = new FormData();
       console.log(recordedAudio);
-      console.log(recordedAudio instanceof Blob); // should output true
+      console.log(recordedAudio instanceof Blob);
       let revId = localStorage.getItem("ID");
-
-      formData.append("speech", recordedAudio, "audio.webm"); // add a filename for the audio file
+      formData.append("speech", recordedAudio, "audio.webm");
       console.log(revId);
 
       fetch(`https://api.onecenter.itcentral.ng/review/${revId}`, {
@@ -205,14 +202,10 @@ function Waitlist(props) {
       }).then((response) => {
         if (response.ok) {
           response.arrayBuffer().then((buffer) => {
-            // Decode the byte array using the Web Audio API
             context.decodeAudioData(buffer, (decodedData) => {
-              // Create a new buffer source and set the decoded data as its buffer
               const source = context.createBufferSource();
               source.buffer = decodedData;
-              // Connect the buffer source to the destination (speakers)
               source.connect(context.destination);
-              // Start playing the audio
               source.start();
               source.addEventListener("ended", () => {
                 setCallComponent(false);
@@ -239,21 +232,16 @@ function Waitlist(props) {
       .then((response) => {
         ringer.pause();
         ringer.currentTime = 0;
-        // Check if the response status is OK (200-299)
         if (response.ok) {
           const headers = new Headers(response.headers);
           const id = headers.get("Review-Id");
           console.log(id);
           localStorage.setItem("ID", id);
           response.arrayBuffer().then((buffer) => {
-            // Decode the byte array using the Web Audio API
             context.decodeAudioData(buffer, (decodedData) => {
-              // Create a new buffer source and set the decoded data as its buffer
               const source = context.createBufferSource();
               source.buffer = decodedData;
-              // Connect the buffer source to the destination (speakers)
               source.connect(context.destination);
-              // Start playing the audio
               source.start();
               source.addEventListener("ended", () => {
                 startRecording();
@@ -269,7 +257,6 @@ function Waitlist(props) {
         console.error("Error:", error);
       });
 
-    // Create a new AudioContext
     const context = new AudioContext();
   }
 
@@ -277,29 +264,6 @@ function Waitlist(props) {
     <div>
       <div>
         <ReactMic record={record} className="sound-wave" onStop={onStop} />
-        <div className={classes.recorder}>
-          {/* <Button
-            variant="contained"
-            className={classes.btn}
-            color="secondary"
-            onClick={startRecording}
-          >
-            Start Recording
-          </Button>
-          <Button
-            variant="contained"
-            className={classes.btn}
-            color="secondary"
-            onClick={stopRecording}
-          >
-            Stop Recording
-          </Button> */}
-          {/* {recordedAudio && (
-            <audio controls>
-              <source src={URL.createObjectURL(recordedAudio)} />
-            </audio>
-          )}{" "} */}
-        </div>
       </div>
       <div className={classes.callContainer}>
         <div
@@ -324,7 +288,6 @@ function Waitlist(props) {
             >
               Connected
             </Typography>
-            {/* <audio src={} autoPlay /> */}
           </div>
           <div
             className={classes.callConnectDisconnect}
@@ -444,7 +407,6 @@ function Waitlist(props) {
             startIcon
             onClick={handleJoinWaitList}
             disabled={email || name != "" ? false : true}
-            // disabled
             endIcon={<img src="./Icons/hourglass.png" width="25rem" />}
           >
             JOIN THE WAITLIST

@@ -1,5 +1,5 @@
 import { Card, Container, Typography, makeStyles } from "@material-ui/core";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Flickity from "react-flickity-component";
 
 const useStyles = makeStyles((theme) => {
@@ -39,6 +39,17 @@ function Reviews() {
     wrapAround: true,
     cellAlign: "left",
   };
+
+  const [reviews, setReviews] = useState([])
+
+  useEffect(()=>{
+    fetch(`https://api.onecenter.itcentral.ng/reviews`, {
+        method: "GET",
+      }).then(async (response) => {
+        let data = await response.json();
+        setReviews(data);
+      })
+  }, [])
   return (
     <div>
       <Container className={classes.reviews}>
@@ -60,132 +71,27 @@ function Reviews() {
         reloadOnUpdate // default false
         static // default false
       >
-        <Card className={classes.card} elevation={10}>
-          <div className="comment">
-            <Typography variant="body2">
-              Lorem ipsum dolor sit amet consectetur adipisicing elit. Doloribus
-              eligendi provident neque perspiciatis, deserunt beatae laudantium
-              vel vitae porro optio a aliquid, ratione quaerat in.
-            </Typography>
-          </div>
-          <div style={{ display: "flex", justifyContent: "space-between" }}>
-            <div className="personName">
-              <Typography variant="body2" style={{ opacity: 0.5 }}>
-                By: Ibrahim Aliyu
+        {reviews?.map(review=>
+          <Card className={classes.card} elevation={10}>
+            <div className="comment">
+              <Typography variant="body2">
+                {review?.content}
               </Typography>
             </div>
-            <div className="companyName">
-              <Typography variant="body2" style={{ opacity: 0.5 }}>
-                For: Mtn Nigeria
-              </Typography>
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              <div className="personName">
+                <Typography variant="body2" style={{ opacity: 0.5 }}>
+                    By: {review?.name}
+                </Typography>
+              </div>
+              <div className="companyName">
+                <Typography variant="body2" style={{ opacity: 0.5 }}>
+                    For: {review?.company}
+                </Typography>
+              </div>
             </div>
-          </div>
-        </Card>
-        <Card className={classes.card} elevation={10}>
-          <div className="comment">
-            <Typography variant="body2">
-              Lorem ipsum dolor sit amet consectetur adipisicing elit. Doloribus
-              eligendi provident neque perspiciatis, deserunt beatae laudantium
-              vel vitae porro optio a aliquid, ratione quaerat in.
-            </Typography>
-          </div>
-          <div style={{ display: "flex", justifyContent: "space-between" }}>
-            <div className="personName">
-              <Typography variant="body2" style={{ opacity: 0.5 }}>
-                By: Ibrahim Aliyu
-              </Typography>
-            </div>
-            <div className="companyName">
-              <Typography variant="body2" style={{ opacity: 0.5 }}>
-                For: Mtn Nigeria
-              </Typography>
-            </div>
-          </div>
-        </Card>
-        <Card className={classes.card} elevation={10}>
-          <div className="comment">
-            <Typography variant="body2">
-              Lorem ipsum dolor sit amet consectetur adipisicing elit. Doloribus
-              eligendi provident neque perspiciatis, deserunt beatae laudantium
-              vel vitae porro optio a aliquid, ratione quaerat in.
-            </Typography>
-          </div>
-          <div style={{ display: "flex", justifyContent: "space-between" }}>
-            <div className="personName">
-              <Typography variant="body2" style={{ opacity: 0.5 }}>
-                By: Ibrahim Aliyu
-              </Typography>
-            </div>
-            <div className="companyName">
-              <Typography variant="body2" style={{ opacity: 0.5 }}>
-                For: Mtn Nigeria
-              </Typography>
-            </div>
-          </div>
-        </Card>
-        <Card className={classes.card} elevation={10}>
-          <div className="comment">
-            <Typography variant="body2">
-              Lorem ipsum dolor sit amet consectetur adipisicing elit. Doloribus
-              eligendi provident neque perspiciatis, deserunt beatae laudantium
-              vel vitae porro optio a aliquid, ratione quaerat in.
-            </Typography>
-          </div>
-          <div style={{ display: "flex", justifyContent: "space-between" }}>
-            <div className="personName">
-              <Typography variant="body2" style={{ opacity: 0.5 }}>
-                By: Ibrahim Aliyu
-              </Typography>
-            </div>
-            <div className="companyName">
-              <Typography variant="body2" style={{ opacity: 0.5 }}>
-                For: Mtn Nigeria
-              </Typography>
-            </div>
-          </div>
-        </Card>
-        <Card className={classes.card} elevation={10}>
-          <div className="comment">
-            <Typography variant="body2">
-              Lorem ipsum dolor sit amet consectetur adipisicing elit. Doloribus
-              eligendi provident neque perspiciatis, deserunt beatae laudantium
-              vel vitae porro optio a aliquid, ratione quaerat in.
-            </Typography>
-          </div>
-          <div style={{ display: "flex", justifyContent: "space-between" }}>
-            <div className="personName">
-              <Typography variant="body2" style={{ opacity: 0.5 }}>
-                By: Ibrahim Aliyu
-              </Typography>
-            </div>
-            <div className="companyName">
-              <Typography variant="body2" style={{ opacity: 0.5 }}>
-                For: Mtn Nigeria
-              </Typography>
-            </div>
-          </div>
-        </Card>
-        <Card className={classes.card} elevation={10}>
-          <div className="comment">
-            <Typography variant="body2">
-              Lorem ipsum dolor sit amet consectetur adipisicing elit. Doloribus
-              eligendi provident neque perspiciatis, deserunt beatae laudantium
-              vel vitae porro optio a aliquid, ratione quaerat in.
-            </Typography>
-          </div>
-          <div style={{ display: "flex", justifyContent: "space-between" }}>
-            <div className="personName">
-              <Typography variant="body2" style={{ opacity: 0.5 }}>
-                By: Ibrahim Aliyu
-              </Typography>
-            </div>
-            <div className="companyName">
-              <Typography variant="body2" style={{ opacity: 0.5 }}>
-                For: Mtn Nigeria
-              </Typography>
-            </div>
-          </div>
-        </Card>
+          </Card>
+        )}
       </Flickity>
     </div>
   );

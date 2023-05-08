@@ -157,6 +157,7 @@ function Waitlist(props) {
   const [recordedAudio, setRecordedAudio] = useState(null);
   const [reviewId, setReviewId] = useState("");
   const [record, setRecord] = useState(false);
+  const allowedReviewTime = 30000;
 
   useEffect(() => {
     setRecordedAudio(recordedAudio);
@@ -243,10 +244,15 @@ function Waitlist(props) {
               source.buffer = decodedData;
               source.connect(context.destination);
               source.start();
-              source.addEventListener("ended", () => {
-                startRecording();
-                setTimeout(stopRecording, 5000);
-              });
+              if (id){
+                source.addEventListener("ended", () => {
+                  startRecording();
+                  setTimeout(stopRecording, allowedReviewTime);
+                });
+              }
+              else{
+                setCallComponent(false);
+              }
             });
           });
         } else {

@@ -9,6 +9,7 @@ import Aos from "aos";
 import "aos/dist/aos.css";
 
 import React, { useEffect, useState } from "react";
+import Countdown from "react-countdown";
 import { ReactMic } from "react-mic";
 
 const useStyles = makeStyles((theme) => {
@@ -71,7 +72,7 @@ const useStyles = makeStyles((theme) => {
       height: "1rem",
       width: "1rem",
       borderRadius: "50%",
-      backgroundColor: "orange",
+      // backgroundColor: "orange",
       animationName: "my-animation",
       animationDuration: "1s",
       animationDirection: "alternate",
@@ -87,6 +88,12 @@ const useStyles = makeStyles((theme) => {
       justifyContent: "center",
       alignItems: "center",
       backgroundColor: "rgba(255,255,255, .1)",
+      transition: "all ease-in-out .5s",
+      "&:hover": {
+        backgroundColor: "rgba(255,255,255, .15)",
+        scale: "1.1",
+        transition: "all ease-in-out .5s",
+      },
     },
     callConnectDisconnectAppear: {
       height: "5rem",
@@ -155,9 +162,9 @@ function Waitlist(props) {
   const [companyName, setCompanyName] = useState("");
   const [callComponent, setCallComponent] = useState(false);
   const [recordedAudio, setRecordedAudio] = useState(null);
-  const [reviewId, setReviewId] = useState("");
   const [record, setRecord] = useState(false);
   const allowedReviewTime = 30000;
+  const [dotColor, setDotColor] = useState("orange");
 
   useEffect(() => {
     setRecordedAudio(recordedAudio);
@@ -171,12 +178,15 @@ function Waitlist(props) {
     setIsFocused(false);
   };
   const startRecording = () => {
+    setDotColor("green");
     setRecord(true);
     setRecordedAudio(null);
   };
 
   const stopRecording = () => {
+    setDotColor("red");
     setRecord(false);
+    console.log("stopped");
   };
   const onStop = (recordedBlob) => {
     const blob = new Blob([recordedBlob.blob], {
@@ -187,23 +197,27 @@ function Waitlist(props) {
 
   useEffect(() => {
     if (recordedAudio) {
+      console.log("here");
       const formData = new FormData();
       console.log(recordedAudio);
       console.log(recordedAudio instanceof Blob);
       let revId = localStorage.getItem("ID");
       formData.append("speech", recordedAudio, "audio.webm");
+      setDotColor("red");
 
       fetch(`https://api.onecenter.itcentral.ng/review/${revId}`, {
         method: "PATCH",
         body: formData,
       }).then((response) => {
         if (response.ok) {
+          console.log("here too");
           response.arrayBuffer().then((buffer) => {
             context.decodeAudioData(buffer, (decodedData) => {
               const source = context.createBufferSource();
               source.buffer = decodedData;
               source.connect(context.destination);
               source.start();
+              setDotColor("orange");
               source.addEventListener("ended", () => {
                 setCallComponent(false);
               });
@@ -240,6 +254,7 @@ function Waitlist(props) {
               source.buffer = decodedData;
               source.connect(context.destination);
               source.start();
+              setDotColor("orange");
               if (id) {
                 source.addEventListener("ended", () => {
                   startRecording();
@@ -260,6 +275,17 @@ function Waitlist(props) {
 
     const context = new AudioContext();
   }
+  const renderer = ({ minutes, seconds }) => {
+    // Pad the minutes and seconds with leading zeros if necessary
+    const formattedMinutes = String(minutes).padStart(2, "0");
+    const formattedSeconds = String(seconds).padStart(2, "0");
+
+    return (
+      <span>
+        {formattedMinutes}:{formattedSeconds}
+      </span>
+    );
+  };
 
   return (
     <div>
@@ -271,13 +297,20 @@ function Waitlist(props) {
           className={callComponent ? classes.callAppear : classes.callDisappear}
         >
           <div className={classes.callInfo}>
-            <div className={classes.callDot}></div>
+            <div
+              className={classes.callDot}
+              style={{ backgroundColor: dotColor }}
+            ></div>
             <div className={classes.timer}>
               <Typography
                 variant="body2"
                 style={{ opacity: 0.5, fontWeight: 600 }}
               >
-                0:59
+                {dotColor == "green" ? (
+                  <Countdown date={Date.now() + 30000} renderer={renderer} />
+                ) : (
+                  "--:--"
+                )}
               </Typography>
             </div>
           </div>
@@ -329,7 +362,7 @@ function Waitlist(props) {
               setName(e.target.value);
             }}
             inputProps={{
-              style: { color: "red" },
+              style: { color: "white" },
             }}
             label={
               <span

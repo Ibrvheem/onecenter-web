@@ -33,8 +33,7 @@ const useStyles = makeStyles((theme) => {
         transition: "all ease-in-out .5s",
       },
       [theme.breakpoints.down("sm")]: {
-        width: "100%",
-        marginLeft: "3rem",
+        width: "95%",
       },
     },
   };
@@ -73,7 +72,7 @@ function Reviews() {
           rewind: true,
           autoplay: true,
           perMove: 1,
-          perPage: 4,
+          perPage: window.innerWidth < 960 ? 1 : 4,
           arrows: false,
           width: "100%",
           pagination: false,

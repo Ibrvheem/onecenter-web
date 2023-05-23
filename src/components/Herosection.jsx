@@ -11,9 +11,6 @@ import {
 import React, { useEffect, useRef, useState } from "react";
 import { motion, useInView } from "framer-motion";
 import { useAnimation } from "framer-motion";
-import { Mail } from "@material-ui/icons";
-import transitions from "@material-ui/core/styles/transitions";
-import Flickity from "react-flickity-component";
 
 const useStyles = makeStyles((theme) => {
   return {

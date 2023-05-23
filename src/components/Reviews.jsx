@@ -1,6 +1,8 @@
 import { Card, Container, Typography, makeStyles } from "@material-ui/core";
 import React, { useEffect, useState } from "react";
-import Flickity from "react-flickity-component";
+import { Splide, SplideSlide } from "@splidejs/react-splide";
+import "@splidejs/react-splide/css";
+import { AutoScroll } from "@splidejs/splide-extension-auto-scroll";
 
 const useStyles = makeStyles((theme) => {
   return {
@@ -8,13 +10,15 @@ const useStyles = makeStyles((theme) => {
       margin: "10rem 0rem",
     },
     cards: {
-      overflow: "hidden",
+      // overflow: "hidden",
     },
     card: {
       border: ".1rem solid #4646f9",
       padding: "4rem 3rem",
+      margin: "5rem 0rem",
+
       background: "transparent",
-      width: "30%",
+      // width: "30%",
       display: "flex",
       flexDirection: "column",
       justifyContent: "space-between",
@@ -22,6 +26,12 @@ const useStyles = makeStyles((theme) => {
       marginLeft: "3rem",
       outline: "none",
       gap: "3rem",
+      transition: "all ease-in-out .5s",
+      "&:hover": {
+        scale: "1.05",
+        border: ".25rem solid #4646f9",
+        transition: "all ease-in-out .5s",
+      },
       [theme.breakpoints.down("sm")]: {
         width: "100%",
         marginLeft: "3rem",
@@ -31,13 +41,6 @@ const useStyles = makeStyles((theme) => {
 });
 function Reviews() {
   const classes = useStyles();
-  const flickityOptions = {
-    pageDots: true,
-    prevNextButtons: false,
-    autoPlay: 3000,
-    wrapAround: true,
-    cellAlign: "left",
-  };
 
   const [reviews, setReviews] = useState([]);
 
@@ -62,34 +65,48 @@ function Reviews() {
           </Typography>
         </div>
       </Container>
-      <Flickity
-        className={classes.cards}
-        elementType={"div"}
-        options={flickityOptions}
-        disableImagesLoaded={false}
-        reloadOnUpdate
-        static
+
+      <Splide
+        aria-label="My Favorite Images"
+        options={{
+          type: "loop",
+          rewind: true,
+          autoplay: true,
+          perMove: 1,
+          perPage: 4,
+          arrows: false,
+          width: "100%",
+          pagination: false,
+          autoScroll: {
+            pauseOnHover: true,
+            pauseOnFocus: false,
+            speed: 2,
+          },
+        }}
+        extensions={{ AutoScroll }}
       >
         {reviews?.map((review) => (
-          <Card className={classes.card} elevation={10}>
-            <div className="comment">
-              <Typography variant="body2">{review?.content}</Typography>
-            </div>
-            <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <div className="personName">
-                <Typography variant="body2" style={{ opacity: 0.5 }}>
-                  By: {review?.name}
-                </Typography>
+          <SplideSlide style={{ width: "20%" }}>
+            <Card className={classes.card} elevation={20}>
+              <div className="comment">
+                <Typography variant="body2">{review?.content}</Typography>
               </div>
-              <div className="companyName">
-                <Typography variant="body2" style={{ opacity: 0.5 }}>
-                  For: {review?.company}
-                </Typography>
+              <div style={{ display: "flex", justifyContent: "space-between" }}>
+                <div className="personName">
+                  <Typography variant="body2" style={{ opacity: 0.5 }}>
+                    By: {review?.name}
+                  </Typography>
+                </div>
+                <div className="companyName">
+                  <Typography variant="body2" style={{ opacity: 0.5 }}>
+                    For: {review?.company}
+                  </Typography>
+                </div>
               </div>
-            </div>
-          </Card>
+            </Card>
+          </SplideSlide>
         ))}
-      </Flickity>
+      </Splide>
     </div>
   );
 }

@@ -3,6 +3,7 @@ import "./App.css";
 import Herosection from "./components/Herosection";
 import Navbar from "./components/Navbar";
 import Home from "./pages/Home";
+import Test from "./components/Test";
 
 const theme = createTheme({
   palette: {
@@ -74,6 +75,7 @@ function App() {
       <div className="App">
         <Navbar />
         <Home />
+        {/* <Test /> */}
       </div>
     </ThemeProvider>
   );

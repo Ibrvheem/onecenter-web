@@ -181,6 +181,70 @@ function Waitlist(props) {
     setDotColor("green");
     setRecord(true);
     setRecordedAudio(null);
+    const MIN_DECIBELS = -45;
+
+    let mediaRecorder;
+    let silenceDetected = false;
+    let silenceTimer = null;
+
+    const activateMicrophone = () => {
+      navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
+        const audioContext = new AudioContext();
+        const audioStreamSource = audioContext.createMediaStreamSource(stream);
+        const analyser = audioContext.createAnalyser();
+        analyser.minDecibels = MIN_DECIBELS;
+        audioStreamSource.connect(analyser);
+
+        const bufferLength = analyser.frequencyBinCount;
+        const domainData = new Uint8Array(bufferLength);
+
+        const detectSound = () => {
+          analyser.getByteFrequencyData(domainData);
+
+          const soundDetected = Array.from(domainData).some(
+            (value) => value > 0
+          );
+
+          if (soundDetected) {
+            clearTimeout(silenceTimer);
+            silenceDetected = false;
+            console.log("Sound detected");
+          } else if (!silenceDetected) {
+            silenceDetected = true;
+            silenceTimer = setTimeout(() => {
+              stopRecording();
+              console.log("Silence detected for more than 2 seconds");
+              stream.getTracks().forEach((track) => track.stop());
+              console.log("Microphone deactivated");
+            }, 2000);
+          }
+
+          window.requestAnimationFrame(detectSound);
+        };
+
+        window.requestAnimationFrame(detectSound);
+      });
+    };
+
+    navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
+      mediaRecorder = new MediaRecorder(stream);
+      mediaRecorder.start();
+
+      const audioChunks = [];
+      mediaRecorder.addEventListener("dataavailable", (event) => {
+        audioChunks.push(event.data);
+      });
+
+      activateMicrophone();
+
+      mediaRecorder.addEventListener("stop", () => {
+        clearTimeout(silenceTimer);
+        const audioBlob = new Blob(audioChunks);
+        const audioUrl = URL.createObjectURL(audioBlob);
+        const audio = new Audio(audioUrl);
+        audio.play();
+      });
+    });
   };
 
   const stopRecording = () => {

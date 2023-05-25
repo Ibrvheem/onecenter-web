@@ -44,7 +44,7 @@ function Reviews() {
   const [reviews, setReviews] = useState([]);
 
   useEffect(() => {
-    fetch(`https://api.onecenter.itcentral.ng/reviews`, {
+    fetch(`${process.env.REACT_APP_API_URL}/reviews`, {
       method: "GET",
     }).then(async (response) => {
       let data = await response.json();

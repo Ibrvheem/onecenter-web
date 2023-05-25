@@ -269,7 +269,7 @@ function Waitlist(props) {
       formData.append("speech", recordedAudio, "audio.webm");
       setDotColor("red");
 
-      fetch(`https://api.onecenter.itcentral.ng/review/${revId}`, {
+      fetch(`${process.env.REACT_APP_API_URL}/review/${revId}`, {
         method: "PATCH",
         body: formData,
       }).then((response) => {
@@ -297,7 +297,7 @@ function Waitlist(props) {
     ringer.loop = true;
     ringer.play();
     setCallComponent(true);
-    fetch("https://api.onecenter.itcentral.ng/review", {
+    fetch(`${process.env.REACT_APP_API_URL}/review`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

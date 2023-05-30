@@ -269,7 +269,7 @@ function Waitlist(props) {
       formData.append("speech", recordedAudio, "audio.webm");
       setDotColor("red");
 
-      fetch(`https://api.onecenter.itcentral.ng/review/${revId}`, {
+      fetch(`${process.env.REACT_APP_API_URL}/review/${revId}`, {
         method: "PATCH",
         body: formData,
       }).then((response) => {
@@ -293,11 +293,13 @@ function Waitlist(props) {
     }
   }, [recordedAudio]);
   function handleJoinWaitList() {
+    const context = new AudioContext();
+
     let ringer = new Audio("./Audio/ringer.mp3");
     ringer.loop = true;
     ringer.play();
     setCallComponent(true);
-    fetch("https://api.onecenter.itcentral.ng/review", {
+    fetch(`${process.env.REACT_APP_API_URL}/review`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -305,6 +307,8 @@ function Waitlist(props) {
       body: JSON.stringify({ name, email, company: companyName }),
     })
       .then((response) => {
+        const contentType = response.headers.get("Content-Type");
+        console.log("Content-Type:", contentType);
         ringer.pause();
         ringer.currentTime = 0;
         if (response.ok) {
@@ -336,8 +340,6 @@ function Waitlist(props) {
       .catch((error) => {
         console.error("Error:", error);
       });
-
-    const context = new AudioContext();
   }
   const renderer = ({ minutes, seconds }) => {
     // Pad the minutes and seconds with leading zeros if necessary

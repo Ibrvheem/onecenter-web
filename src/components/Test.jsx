@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { ReactMic } from "react-mic";
 
 const Test = () => {
   const [isRecording, setIsRecording] = useState(false);
+  const audioRef = useRef(null);
 
   const startRecording = () => {
     setIsRecording(true);
@@ -65,10 +66,9 @@ const Test = () => {
   };
 
   const onData = (recordedBlob) => {
-    // Handle the recorded audio data
-    console.log("Recorded Blob:", recordedBlob);
+    const audioUrl = URL.createObjectURL(recordedBlob.blob);
+    audioRef.current.src = audioUrl;
   };
-
   return (
     <div>
       <button onClick={startRecording}>Start Recording</button>
@@ -80,6 +80,7 @@ const Test = () => {
         strokeColor="#000000"
         backgroundColor="#FF4081"
       />
+      <audio src="../../Audio/ringer.mp3" controls />
     </div>
   );
 };

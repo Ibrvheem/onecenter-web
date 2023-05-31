@@ -120,11 +120,9 @@ function Herosection() {
           The Future Of Customer Service Is Here
         </Typography>
         <Typography variant="body1">
-          Lorem ipsum dolor sit amet consectetur adipisicing elit. Impedit non
-          tenetur suscipit, dolorum dolore dolores officia, vitae vero maiores
-          et voluptas voluptates quis laboriosam. Nulla suscipit, repellendus
-          rerum excepturi, modi ad necessitatibus repellat illo nemo provident,
-          rem fugit consectetur.
+          1st AI-Powered Customer Care Agent with Interactive Voice Response.
+          Revolutionising support with AI. <br />
+          OneCenter - Future of customer care.{" "}
         </Typography>
         <div className="userInput">
           <a href="#waitList">

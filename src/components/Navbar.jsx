@@ -44,7 +44,7 @@ function Navbar() {
         <div className={classes.navMenu}>
           <List>
             <ListItem className={classes.navItem} style={{ color: "white" }}>
-              Demo
+              <a href="https://demo.onecenter.ai">Demo</a>
             </ListItem>
           </List>
         </div>

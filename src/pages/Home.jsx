@@ -8,6 +8,7 @@ import Footer from "../components/Footer";
 import Aos from "aos";
 import { AudioRecorder } from "react-audio-voice-recorder";
 import { ReactMic } from "react-mic";
+import Test from "../components/Test";
 
 const useStyles = makeStyles((theme) => {
   return {};
@@ -15,6 +16,7 @@ const useStyles = makeStyles((theme) => {
 function Home() {
   return (
     <div>
+      {/* <Test /> */}
       <Herosection />
       <Waitlist />
       <Reviews />

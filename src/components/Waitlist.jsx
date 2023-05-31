@@ -1,3 +1,4 @@
+import { ReactMic } from "@cleandersonlobo/react-mic";
 import {
   Button,
   Container,
@@ -5,12 +6,12 @@ import {
   Typography,
   makeStyles,
 } from "@material-ui/core";
+import { Alert, AlertTitle } from "@mui/material";
 import Aos from "aos";
 import "aos/dist/aos.css";
 
 import React, { useEffect, useState } from "react";
 import Countdown from "react-countdown";
-import { ReactMic } from "react-mic";
 
 const useStyles = makeStyles((theme) => {
   return {
@@ -163,6 +164,7 @@ function Waitlist(props) {
   const [callComponent, setCallComponent] = useState(false);
   const [recordedAudio, setRecordedAudio] = useState(null);
   const [record, setRecord] = useState(false);
+  const [valid, setValid] = useState(true);
   const allowedReviewTime = 30000;
   const [dotColor, setDotColor] = useState("orange");
 
@@ -181,70 +183,75 @@ function Waitlist(props) {
     setDotColor("green");
     setRecord(true);
     setRecordedAudio(null);
-    const MIN_DECIBELS = -45;
+    // const MIN_DECIBELS = -45;
+    // const SILENCE_DURATION = 2000;
+    // let audioContext;
+    // let mediaStream;
+    // let scriptProcessorNode;
+    // let silenceDetected = false;
+    // let silenceTimer = null;
 
-    let mediaRecorder;
-    let silenceDetected = false;
-    let silenceTimer = null;
+    // const activateMicrophone = () => {
+    //   navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
+    //     mediaStream = stream;
+    //     audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    //     scriptProcessorNode = audioContext.createScriptProcessor(4096, 1, 1);
 
-    const activateMicrophone = () => {
-      navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
-        const audioContext = new AudioContext();
-        const audioStreamSource = audioContext.createMediaStreamSource(stream);
-        const analyser = audioContext.createAnalyser();
-        analyser.minDecibels = MIN_DECIBELS;
-        audioStreamSource.connect(analyser);
+    //     const microphoneSource = audioContext.createMediaStreamSource(stream);
+    //     const analyser = audioContext.createAnalyser();
+    //     analyser.minDecibels = MIN_DECIBELS;
 
-        const bufferLength = analyser.frequencyBinCount;
-        const domainData = new Uint8Array(bufferLength);
+    //     microphoneSource.connect(analyser);
+    //     analyser.connect(scriptProcessorNode);
+    //     scriptProcessorNode.connect(audioContext.destination);
 
-        const detectSound = () => {
-          analyser.getByteFrequencyData(domainData);
+    //     scriptProcessorNode.addEventListener("audioprocess", detectSound);
+    //   });
+    // };
 
-          const soundDetected = Array.from(domainData).some(
-            (value) => value > 0
-          );
+    // const detectSound = (event) => {
+    //   const inputData = event.inputBuffer.getChannelData(0);
+    //   const isSoundDetected = inputData.some((value) => Math.abs(value) > 0.01);
 
-          if (soundDetected) {
-            clearTimeout(silenceTimer);
-            silenceDetected = false;
-            console.log("Sound detected");
-          } else if (!silenceDetected) {
-            silenceDetected = true;
-            silenceTimer = setTimeout(() => {
-              stopRecording();
-              console.log("Silence detected for more than 2 seconds");
-              stream.getTracks().forEach((track) => track.stop());
-              console.log("Microphone deactivated");
-            }, 2000);
-          }
+    //   if (isSoundDetected) {
+    //     clearTimeout(silenceTimer);
+    //     silenceDetected = false;
+    //     console.log("Sound detected");
+    //   } else if (!silenceDetected) {
+    //     silenceDetected = true;
+    //     silenceTimer = setTimeout(() => {
+    //       stopRecording();
+    //       console.log("Silence detected for more than 2 seconds");
+    //       mediaStream.getTracks().forEach((track) => track.stop());
+    //       console.log("Microphone deactivated");
+    //     }, SILENCE_DURATION);
+    //   }
+    // };
 
-          window.requestAnimationFrame(detectSound);
-        };
+    // navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
+    //   mediaStream = stream;
+    //   mediaStream.oninactive = () => {
+    //     clearTimeout(silenceTimer);
+    //   };
 
-        window.requestAnimationFrame(detectSound);
-      });
-    };
+    //   activateMicrophone();
 
-    navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
-      mediaRecorder = new MediaRecorder(stream);
-      mediaRecorder.start();
+    //   const audioChunks = [];
+    //   const mediaRecorder = new MediaRecorder(stream);
+    //   mediaRecorder.start();
 
-      const audioChunks = [];
-      mediaRecorder.addEventListener("dataavailable", (event) => {
-        audioChunks.push(event.data);
-      });
+    //   mediaRecorder.addEventListener("dataavailable", (event) => {
+    //     audioChunks.push(event.data);
+    //   });
 
-      activateMicrophone();
-
-      mediaRecorder.addEventListener("stop", () => {
-        clearTimeout(silenceTimer);
-        const audioBlob = new Blob(audioChunks);
-        const audioUrl = URL.createObjectURL(audioBlob);
-        const audio = new Audio(audioUrl);
-        audio.play();
-      });
-    });
+    //   mediaRecorder.addEventListener("stop", () => {
+    //     clearTimeout(silenceTimer);
+    //     const audioBlob = new Blob(audioChunks);
+    //     const audioUrl = URL.createObjectURL(audioBlob);
+    //     const audio = new Audio(audioUrl);
+    //     audio.play();
+    //   });
+    // });
   };
 
   const stopRecording = () => {
@@ -266,7 +273,9 @@ function Waitlist(props) {
       console.log(recordedAudio);
       console.log(recordedAudio instanceof Blob);
       let revId = localStorage.getItem("ID");
-      formData.append("speech", recordedAudio, "audio.webm");
+      console.log("filename:" + revId + ".mp3");
+      formData.append("speech", recordedAudio, revId + ".mp3");
+
       setDotColor("red");
 
       fetch(`${process.env.REACT_APP_API_URL}/review/${revId}`, {
@@ -293,51 +302,64 @@ function Waitlist(props) {
     }
   }, [recordedAudio]);
   function handleJoinWaitList() {
-    let ringer = new Audio("./Audio/ringer.mp3");
-    ringer.loop = true;
-    ringer.play();
-    setCallComponent(true);
-    fetch(`${process.env.REACT_APP_API_URL}/review`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ name, email, company: companyName }),
-    })
-      .then((response) => {
-        ringer.pause();
-        ringer.currentTime = 0;
-        if (response.ok) {
-          const headers = new Headers(response.headers);
-          const id = headers.get("Review-Id");
-          console.log(id);
-          localStorage.setItem("ID", id);
-          response.arrayBuffer().then((buffer) => {
-            context.decodeAudioData(buffer, (decodedData) => {
-              const source = context.createBufferSource();
-              source.buffer = decodedData;
-              source.connect(context.destination);
-              source.start();
-              setDotColor("orange");
-              if (id) {
-                source.addEventListener("ended", () => {
-                  startRecording();
-                  setTimeout(stopRecording, allowedReviewTime);
-                });
-              } else {
-                setCallComponent(false);
-              }
-            });
-          });
-        } else {
-          console.error("Error:", response.status, response.statusText);
-        }
-      })
-      .catch((error) => {
-        console.error("Error:", error);
-      });
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const isValid = emailRegex.test(email);
+    setValid(isValid);
 
-    const context = new AudioContext();
+
+    if (valid) {
+      setValid(true);
+      const context = new AudioContext();
+
+      let ringer = new Audio("./Audio/ringer.mp3");
+      ringer.loop = true;
+      ringer.play();
+      setCallComponent(true);
+      fetch(`${process.env.REACT_APP_API_URL}/review`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ name, email, company: companyName }),
+      })
+        .then((response) => {
+          const contentType = response.headers.get("Content-Type");
+          console.log("Content-Type:", contentType);
+          ringer.pause();
+          ringer.currentTime = 0;
+          if (response.ok) {
+            const headers = new Headers(response.headers);
+            const id = headers.get("Review-Id");
+            console.log(id);
+            localStorage.setItem("ID", id);
+            response.arrayBuffer().then((buffer) => {
+              context.decodeAudioData(buffer, (decodedData) => {
+                const source = context.createBufferSource();
+                source.buffer = decodedData;
+                source.connect(context.destination);
+                source.start();
+                setDotColor("orange");
+                if (id) {
+                  source.addEventListener("ended", () => {
+                    startRecording();
+                    setTimeout(stopRecording, allowedReviewTime);
+                  });
+                } else {
+                  setCallComponent(false);
+                  console.log("invalid email");
+                }
+              });
+            });
+          } else {
+            console.error("Error:", response.status, response.statusText);
+          }
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+        });
+    } else {
+      setValid(false);
+    }
   }
   const renderer = ({ minutes, seconds }) => {
     // Pad the minutes and seconds with leading zeros if necessary
@@ -354,7 +376,12 @@ function Waitlist(props) {
   return (
     <div>
       <div>
-        <ReactMic record={record} className="sound-wave" onStop={onStop} />
+        <ReactMic
+          record={record}
+          className="sound-wave"
+          onStop={onStop}
+          // mimeType="audio/mp3"
+        />
       </div>
       <div className={classes.callContainer}>
         <div
@@ -413,6 +440,29 @@ function Waitlist(props) {
           Be among the first to experience our revolutionary new platform and
           transform the way you manage your business{" "}
         </Typography>
+        {!valid && (
+          <Alert
+            severity="error"
+            variant="outlined"
+            // color="info"
+            style={{
+              fontSize: "1.2rem",
+              textAlign: "left",
+              display: "flex",
+              flexDirection: "row",
+              alignItems: "center",
+              gap: "2rem",
+              width: "50rem",
+              margin: "auto",
+            }}
+          >
+            <AlertTitle style={{ textAlign: "left ", fontSize: "1.5rem  " }}>
+              Invalid Email Address
+            </AlertTitle>
+            Please make sure your email address is valid
+          </Alert>
+        )}
+
         <form
           className={classes.form}
           data-aos="fade-zoom-in"
@@ -448,6 +498,7 @@ function Waitlist(props) {
           />
           <TextField
             variant="outlined"
+            type={"email"}
             onChange={(e) => {
               setEmail(e.target.value);
             }}

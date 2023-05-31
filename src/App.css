@@ -9,6 +9,9 @@ html {
   font-size: 62.5%;
   scroll-behavior: smooth;
 }
+a {
+  all: unset;
+}
 body {
   background-image: url("/public/Images/Hero\ Section.png");
   background-attachment: fixed;

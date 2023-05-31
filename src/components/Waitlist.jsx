@@ -306,6 +306,7 @@ function Waitlist(props) {
     const isValid = emailRegex.test(email);
     setValid(isValid);
 
+
     if (valid) {
       setValid(true);
       const context = new AudioContext();

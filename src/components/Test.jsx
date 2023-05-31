@@ -1,22 +1,36 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { ReactMic } from "react-mic";
 
 const Test = () => {
   const [isRecording, setIsRecording] = useState(false);
-  const audioRef = useRef(null);
+  const [audioUrl, setAudioUrl] = useState("");
+  const [mediaRecorder, setMediaRecorder] = useState(null);
+  const [audioChunks, setAudioChunks] = useState([]);
+  const [shouldPlay, setShouldPlay] = useState(false);
+
+  useEffect(() => {
+    if (audioUrl && shouldPlay) {
+      const audio = new Audio(audioUrl);
+      audio.play();
+    }
+  }, [audioUrl, shouldPlay]);
 
   const startRecording = () => {
     setIsRecording(true);
     const MIN_DECIBELS = -45;
 
     navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
-      const mediaRecorder = new MediaRecorder(stream);
-      mediaRecorder.start();
+      const recorder = new MediaRecorder(stream);
+      setMediaRecorder(recorder); // Save the media recorder in state
 
-      const audioChunks = [];
-      mediaRecorder.addEventListener("dataavailable", (event) => {
-        audioChunks.push(event.data);
+      recorder.start();
+
+      const chunks = [];
+      recorder.addEventListener("dataavailable", (event) => {
+        chunks.push(event.data);
       });
+
+      setAudioChunks(chunks); // Save the audio chunks in state
 
       const audioContext = new AudioContext();
       const audioStreamSource = audioContext.createMediaStreamSource(stream);
@@ -51,24 +65,35 @@ const Test = () => {
 
       window.requestAnimationFrame(detectSound);
 
-      mediaRecorder.addEventListener("stop", () => {
+      recorder.addEventListener("stop", () => {
         clearTimeout(silenceTimer);
         const audioBlob = new Blob(audioChunks);
-        const audioUrl = URL.createObjectURL(audioBlob);
-        const audio = new Audio(audioUrl);
-        audio.play();
+        const url = URL.createObjectURL(audioBlob);
+        setAudioUrl(url); // Set the audio URL
+
+        setTimeout(() => {
+          setShouldPlay(true); // Start playing the audio after a slight delay
+        }, 100);
       });
     });
   };
 
   const stopRecording = () => {
     setIsRecording(false);
+    setShouldPlay(false); // Stop playing the audio
+    if (mediaRecorder) {
+      mediaRecorder.stop();
+      const audioBlob = new Blob(audioChunks);
+      const url = URL.createObjectURL(audioBlob);
+      setAudioUrl(url); // Set the audio URL
+    }
   };
 
   const onData = (recordedBlob) => {
-    const audioUrl = URL.createObjectURL(recordedBlob.blob);
-    audioRef.current.src = audioUrl;
+    // Handle the recorded audio data
+    console.log("Recorded Blob:", recordedBlob);
   };
+
   return (
     <div>
       <button onClick={startRecording}>Start Recording</button>
@@ -80,7 +105,7 @@ const Test = () => {
         strokeColor="#000000"
         backgroundColor="#FF4081"
       />
-      <audio src="../../Audio/ringer.mp3" controls />
+      {audioUrl && <audio controls src={audioUrl}></audio>}
     </div>
   );
 };

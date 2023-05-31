@@ -3,8 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@cleandersonlobo/react-mic": "^1.2.0",
+    "@emotion/react": "^11.11.0",
+    "@emotion/styled": "^11.11.0",
     "@material-ui/core": "^4.12.4",
     "@material-ui/icons": "^4.11.3",
+    "@matuschek/react-mic": "^1.2.2",
+    "@mui/material": "^5.13.3",
     "@splidejs/react-splide": "^0.7.12",
     "@splidejs/splide-extension-auto-scroll": "^0.5.3",
     "@testing-library/jest-dom": "^5.16.5",
@@ -21,6 +26,7 @@
     "react-scripts": "5.0.1",
     "react-slick": "^0.29.0",
     "react-speech-recognition": "^3.10.0",
+    "recorder-js": "^1.0.7",
     "wavesurfer.js": "^6.6.3",
     "web-audio-analyser": "^2.0.1",
     "web-vitals": "^2.1.4"
